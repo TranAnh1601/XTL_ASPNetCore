@@ -1,0 +1,38 @@
+﻿
+@using Microsoft.EntityFrameworkCore
+@using System.Data
+@inject AppDbContext _context
+
+@{
+    ViewData["Title"] = "Database Manage";
+    var connect = _context.Database.GetDbConnection();
+    var dbname = connect.Database;
+    var can_connect = _context.Database.CanConnect();
+}
+<partial name="_StatusMessage" />
+<h1>@dbname</h1>
+<p> @connect.DataSource </p>
+<p> @connect.State </p>
+<hr />
+<h2>Migration</h2>
+@foreach(var mig in _context.Database.GetAppliedMigrations())
+{
+    <p>@mig</p>
+}
+@foreach (var mig in _context.Database.GetPendingMigrations())
+{
+    <p> pending: @mig</p>
+}
+@if(can_connect)
+{
+    <h2> Table</h2>
+    await _context.Database.OpenConnectionAsync();
+    var table = _context.Database.GetDbConnection().GetSchema("Tables");
+    <ul>
+        @foreach(System.Data.DataRow row in table.Rows)
+        {
+            <li>@row["Table_name"]</li>
+        }
+    </ul>
+    <a class=" btn btn-danger" asp-action="Delete"> delete database @dbname</a>
+}
