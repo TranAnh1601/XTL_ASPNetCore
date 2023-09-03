@@ -27,8 +27,9 @@ namespace XTL_ASPNetCore.Areas.Database.Controllers
         public async Task<IActionResult> DeleteAsync()
         {
             var success = await _context.Database.EnsureCreatedAsync();
-            StatusMessage = success ? "detete success" : "cant delete";
-            return RedirectToAction(nameof(Index));
+            //StatusMessage = success ? "detete success" : "cant delete";
+            //return RedirectToAction(nameof(Index));
+            return View(Delete);
         }
     }
 }

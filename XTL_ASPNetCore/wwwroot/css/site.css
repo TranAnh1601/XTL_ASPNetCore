@@ -16,3 +16,6 @@ html {
 body {
   margin-bottom: 60px;
 }
+.navbar-brand {
+    color: #8A2BE2 !important;
+}
