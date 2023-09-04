@@ -36,11 +36,12 @@ public class SendMailService : IEmailSender {
         logger = _logger;
         logger.LogInformation("Create SendMailService");
     }
-
    
     public async Task SendEmailAsync(string email, string subject, string htmlMessage) {
        var message = new MimeMessage ();
+
         message.Sender = new MailboxAddress(mailSettings.DisplayName, mailSettings.Mail);
+
         message.From.Add(new MailboxAddress(mailSettings.DisplayName, mailSettings.Mail));
         message.To.Add (MailboxAddress.Parse (email));
         message.Subject = subject;

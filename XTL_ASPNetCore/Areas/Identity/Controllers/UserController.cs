@@ -24,7 +24,7 @@ using XTL_ASPNetCore.Models;
 namespace XTL_ASPNetCore.Areas.Identity.Controllers
 {
 
-    //[Authorize(Roles = RoleName.Administrator)]
+    [Authorize(Roles = RoleName.Administrator)]
     [Area("Identity")]
     [Route("/ManageUser/[action]")]
     public class UserController : Controller

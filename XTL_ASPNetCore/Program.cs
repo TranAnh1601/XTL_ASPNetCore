@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Configuration;
+using XTL_ASPNetCore.Data;
 using XTL_ASPNetCore.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -57,7 +58,22 @@ builder.Services.AddAuthentication()
             options.CallbackPath = "/dang-nhap-tu-google";
         });
 builder.Services.AddSingleton<IdentityErrorDescriber, IdentityErrorDescriber>();
+
+builder.Services.AddOptions();
+var mailsetting = builder.Configuration.GetSection("MailSettings");
+builder.Services.Configure<MailSettings>(mailsetting);
 builder.Services.AddSingleton<IEmailSender, SendMailService>();
+
+builder.Services.AddAuthorization(option =>
+{
+    option.AddPolicy("ViewManageMenu", builder =>
+    {
+        builder.RequireAuthenticatedUser(); // phai dang nhap
+        builder.RequireRole(RoleName.Administrator); // quyen admin
+    });
+});
+
+
 
 
 var app = builder.Build();

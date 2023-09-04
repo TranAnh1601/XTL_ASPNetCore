@@ -128,6 +128,7 @@ namespace XTL_ASPNetCore.Areas.Identity.Controllers
             {
                 var user = new AppUser { UserName = model.UserName, Email = model.Email };
                 var result = await _userManager.CreateAsync(user, model.Password);
+                //var address = 
 
                 if (result.Succeeded)
                 {
