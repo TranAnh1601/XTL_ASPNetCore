@@ -46,6 +46,7 @@
 		<Folder Include="Areas\Contact\Models\" />
 		<Folder Include="Areas\Database\Data\" />
 		<Folder Include="Areas\Database\Models\" />
+		<Folder Include="Areas\Identity\Data\" />
 	</ItemGroup>
 
 </Project>

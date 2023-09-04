@@ -1,35 +1,12 @@
-﻿<style>
-.alert {
-  padding: 20px;
-  background-color: yellow; /* Red */
-  color: black;
-  margin-bottom: 15px;
-}
-
-/* The close button */
-.closebtn {
-  margin-left: 15px;
-  color: red;
-  font-weight: bold;
-  float: right;
-  font-size: 22px;
-  line-height: 20px;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-/* When moving the mouse over the close button */
-.closebtn:hover {
-  color: black;
-}
-</style>
 @{
-    var message = TempData["StatusMessage"] as string;
+    var mgs = TempData["StatusMessage"] as string;
 }
-@if(!string.IsNullOrEmpty(message))
+
+@if (!String.IsNullOrEmpty(mgs))
 {
-    <div class="alert">
-        <span class="closebtn" onclick="this.parentElement.style.display='none';">×</span>
-        @message
+    var statusMessageClass = mgs.StartsWith("Error") ? "danger" : "success";
+    <div class="alert alert-@statusMessageClass alert-dismissible" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        @mgs
     </div>
 }

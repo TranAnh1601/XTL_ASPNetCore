@@ -77,9 +77,14 @@
 <body style="background-color:white;">
     <div class="dropdown">
         <button onclick="myFunction()" class="dropbtn">Manager</button>
+
         <div id="myDropdown" class="dropdown-content">
-            <a asp-action="Index" asp-controller="Contacts" asp-area="Contact">Contact</a>
+            <a asp-action="Index" asp-controller="Contacts" asp-area="Contact">Contact1</a>
+            <a asp-action="Index" asp-controller="Role" asp-area="Identity">Quan ly role</a>
+            <a asp-action="Index" asp-controller="User" asp-area="Identity">Quan ly User</a>
+
         </div>
+
     </div>
 
     <script>

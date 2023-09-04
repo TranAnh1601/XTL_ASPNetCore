@@ -56,6 +56,8 @@ builder.Services.AddAuthentication()
             // https://localhost:5001/signin-google
             options.CallbackPath = "/dang-nhap-tu-google";
         });
+builder.Services.AddSingleton<IdentityErrorDescriber, IdentityErrorDescriber>();
+builder.Services.AddSingleton<IEmailSender, SendMailService>();
 
 
 var app = builder.Build();
