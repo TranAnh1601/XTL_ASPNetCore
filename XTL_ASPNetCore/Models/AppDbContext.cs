@@ -1,5 +1,6 @@
 ﻿                                      using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using XTL_ASPNetCore.Models.Blog;
 
 namespace XTL_ASPNetCore.Models
 {
@@ -30,9 +31,16 @@ namespace XTL_ASPNetCore.Models
                     entityType.SetTableName(tableName.Substring(6));
                 }
             }
+
+            modelBuilder.Entity<Category>(entity =>
+            {
+                entity.HasIndex(c => c.Slug);
+            });
         }
 
         public DbSet<Contact> contacts { get; set; }
-     
+        public DbSet<Category> categories { get; set; }
+
+
     }
 }
