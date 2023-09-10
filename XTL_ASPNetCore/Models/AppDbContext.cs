@@ -34,12 +34,27 @@ namespace XTL_ASPNetCore.Models
 
             modelBuilder.Entity<Category>(entity =>
             {
-                entity.HasIndex(c => c.Slug);
+                entity.HasIndex(c => c.Slug).IsUnique(); //IsUnique chi co 1 slug duy nhat
             });
+
+            modelBuilder.Entity<PostCategory>(entity =>
+            {
+                entity.HasKey(c =>  new {c.PostID,c.CategoryID});
+            });
+            modelBuilder.Entity<Post>( entity =>
+            {
+                entity.HasIndex(c => c.Slug).IsUnique();
+            });
+           
+               
         }
 
         public DbSet<Contact> contacts { get; set; }
         public DbSet<Category> categories { get; set; }
+        public DbSet<Post> Posts { get; set; }
+
+        public DbSet<PostCategory> PostCategories { get; set; }
+
 
 
     }
