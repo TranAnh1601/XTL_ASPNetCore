@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using System.Configuration;
+using System.Net.NetworkInformation;
 using XTL_ASPNetCore.Data;
 using XTL_ASPNetCore.Models;
 
@@ -92,6 +94,13 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions()
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(Directory.GetCurrentDirectory(), "Uploads")),
+    RequestPath = "/contents" // duong dan url
+}); 
+
 
 app.UseRouting();
 

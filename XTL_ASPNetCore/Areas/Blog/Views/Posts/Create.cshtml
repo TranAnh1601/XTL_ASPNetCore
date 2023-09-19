@@ -55,6 +55,13 @@
 <div>
     <a asp-action="Index">Danh sách bài viết</a>
 </div>
+@{
+    var model = new XTL_ASPNetCore.Models.Summernote("#Description");
+    var model2 = new XTL_ASPNetCore.Models.Summernote("#Content") {height = 500}; // chinh chieu cao
+
+}
+<partial name="_Summernote" model="model" />
+<partial name="_Summernote" model="model2" />
 
 
 @section Scripts {
