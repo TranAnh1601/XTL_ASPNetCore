@@ -1,0 +1,43 @@
+﻿@using XTL_ASPNetCore.Views.Shared.Components.CategorySidebar
+@model XTL_ASPNetCore.Views.Shared.Components.CategorySidebar.CategorySidebar.CategorySidebarData
+
+@{
+    int level = Model.level;
+}
+@if (Model.Categories.Count > 0)
+{
+    @if (level == 0)
+    {
+        @Html.Raw("<div class=\"categorysidebar\">");
+        <h3>
+            <a asp-controller="ViewPost" asp-action="Index" asp-route-categoryslug="">
+                Tất cả chuyên mục
+            </a>
+        </h3>
+    }
+    <ul>
+        @foreach (var category in Model.Categories)
+        {
+            var cssActive = (category.Slug == Model.categoryslug) ? "active" : null;
+            <li>
+                <a class="@cssActive" asp-controller="ViewPost" asp-action="Index" asp-route-categoryslug="@category.Slug">
+                    @category.Title
+                </a>
+                @if (category.CategoryChildren?.Count > 0)
+                {
+                    @await Component.InvokeAsync("XTL_ASPNetCore.Views.Shared.Components.CategorySidebar.CategorySidebar",  @*  namespacce + class*@
+                    new XTL_ASPNetCore.Views.Shared.Components.CategorySidebar.CategorySidebar.CategorySidebarData()
+                    {
+                      Categories = category.CategoryChildren.ToList(),
+                      level = level + 1,
+                      categoryslug = ViewBag.categoryslug
+                     })
+                }
+            </li>
+        }
+    </ul>
+    @if (level == 0)
+    {
+        @Html.Raw("</div>");
+    }
+}

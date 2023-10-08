@@ -1,48 +1,54 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using Bogus.DataSets;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
-using System.Xml.Linq;
 
-namespace XTL_ASPNetCore.Models.Blog
+namespace XTL_ASPNetCore.Models.Product
 {
-    [Table("Category")]
-    public class Category
+    [Table("CategoryProduct")]
+    public class CategoryProduct
     {
 
         [Key]
         public int Id { get; set; }
 
+        // Tiều đề Category
         [Required(ErrorMessage = "Phải có tên danh mục")]
         [StringLength(100, MinimumLength = 3, ErrorMessage = "{0} dài {1} đến {2}")]
         [Display(Name = "Tên danh mục")]
-        public string Title { get; set; } // Tiều đề Category
+        public string Title { get; set; }
 
-
+        // Nội dung, thông tin chi tiết về Category
         [DataType(DataType.Text)]
         [Display(Name = "Nội dung danh mục")]
-        public string Description { get; set; }  // Nội dung, thông tin chi tiết về Category
+        public string Description { get; set; }
 
-
+        //chuỗi Url
         [Required(ErrorMessage = "Phải tạo url")]
         [StringLength(100, MinimumLength = 3, ErrorMessage = "{0} dài {1} đến {2}")]
         [RegularExpression(@"^[a-z0-9-]*$", ErrorMessage = "Chỉ dùng các ký tự [a-z0-9-]")]
         [Display(Name = "Url hiện thị")]
-        public string Slug { set; get; }   //chuỗi Url 
-        public ICollection<Category> CategoryChildren { get; set; }   // Các Category con
+        public string Slug { set; get; }
 
+
+
+        // Các Category con
+        public ICollection<CategoryProduct> CategoryChildren { get; set; }
+
+        // Category cha (FKey)
         [Display(Name = "Danh mục cha")]
-        public int? ParentCategoryId { get; set; }  // Category cha (FKey)
+        public int? ParentCategoryId { get; set; }
 
         [ForeignKey("ParentCategoryId")]
         [Display(Name = "Danh mục cha")]
-        public Category ParentCategory { set; get; }
+        public CategoryProduct ParentCategory { set; get; }
 
 
-        public void ChildCategoryIDs(ICollection<Category> childcates, List<int> lists)
+        public void ChildCategoryIDs(ICollection<CategoryProduct> childcates, List<int> lists)
         {
             if (childcates == null)
                 childcates = this.CategoryChildren;
-            //duyer qua cac category con
-            foreach (Category category in childcates)
+
+            foreach (CategoryProduct category in childcates)
             {
                 lists.Add(category.Id);
                 ChildCategoryIDs(category.CategoryChildren, lists);
@@ -50,10 +56,9 @@ namespace XTL_ASPNetCore.Models.Blog
             }
         }
 
-        //laydanh muc cha, breadcrumb
-        public List<Category> ListParents()
+        public List<CategoryProduct> ListParents()
         {
-            List<Category> li = new List<Category>();
+            List<CategoryProduct> li = new List<CategoryProduct>();
             var parent = this.ParentCategory;
             while (parent != null)
             {
@@ -64,5 +69,6 @@ namespace XTL_ASPNetCore.Models.Blog
             li.Reverse();
             return li;
         }
+
     }
 }

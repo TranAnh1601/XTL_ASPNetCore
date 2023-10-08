@@ -1,6 +1,7 @@
 ﻿                                      using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using XTL_ASPNetCore.Models.Blog;
+using XTL_ASPNetCore.Models.Product;
 
 namespace XTL_ASPNetCore.Models
 {
@@ -45,8 +46,21 @@ namespace XTL_ASPNetCore.Models
             {
                 entity.HasIndex(c => c.Slug).IsUnique();
             });
-           
-               
+
+            modelBuilder.Entity<CategoryProduct>(entity => {
+                entity.HasIndex(c => c.Slug)
+                      .IsUnique();
+            });
+
+            modelBuilder.Entity<ProductCategoryProduct>(entity => {
+                entity.HasKey(c => new { c.ProductID, c.CategoryID });
+            });
+
+            modelBuilder.Entity<ProductModel>(entity => {
+                entity.HasIndex(p => p.Slug)
+                      .IsUnique();
+            });
+
         }
 
         public DbSet<Contact> contacts { get; set; }
@@ -55,6 +69,13 @@ namespace XTL_ASPNetCore.Models
 
         public DbSet<PostCategory> PostCategories { get; set; }
 
+
+        public DbSet<CategoryProduct> CategoryProducts { get; set; }
+        public DbSet<ProductModel> Products { get; set; }
+
+        public DbSet<ProductCategoryProduct> ProductCategoryProducts { get; set; }
+
+        public DbSet<ProductPhoto> ProductPhotos { get; set; }
 
 
     }

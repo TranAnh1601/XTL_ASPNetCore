@@ -1,7 +1,8 @@
-﻿@model XTL_ASPNetCore.Areas.Blog.Models.CreatepostModel
+﻿@*@model XTL_ASPNetCore.Models.Blog.Post*@
+@model XTL_ASPNetCore.Areas.Product.Models.CreateProductModel
 
 @{
-    ViewData["Title"] = "Cập nhật bài viết";
+    ViewData["Title"] = "ThêmSan Pham";
     var list = ViewData["categories"] as MultiSelectList;
 }
 
@@ -9,9 +10,9 @@
 <hr />
 <div class="row">
     <div class="col-md-12">
-        <form asp-action="Edit">
+        <form asp-action="Create">
             <div asp-validation-summary="All" class="text-danger"></div>
-            <input type="hidden" asp-for="PostId" />
+
             <div class="form-group">
                 <label asp-for="CategoryIDs" class="control-label"></label>
                 <select asp-for="CategoryIDs" multiple="multiple" asp-items="list" class="w-100"></select>
@@ -22,6 +23,11 @@
                 <label asp-for="Title" class="control-label"></label>
                 <input asp-for="Title" class="form-control" />
                 <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+              <div class="form-group">
+                <label asp-for="Price" class="control-label"></label>
+                <input asp-for="Price" class="form-control"></input>
+                <span asp-validation-for="Price" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Description" class="control-label"></label>
@@ -45,15 +51,21 @@
             </div>
 
             <div class="form-group">
-                <input type="submit" value="Cập nhật" class="btn btn-primary" />
+                <input type="submit" value="Tạo bài viết" class="btn btn-primary" />
             </div>
         </form>
     </div>
 </div>
 
 <div>
-    <a asp-action="Index">Danh sách bài viết</a>
+    <a asp-action="Index">Danh sách SP</a>
 </div>
+@{
+    var model = new XTL_ASPNetCore.Models.Summernote("#Description");
+    var model2 = new XTL_ASPNetCore.Models.Summernote("#Content") {height = 500}; // chinh chieu cao
+}
+<partial name="_Summernote" model="model" />
+<partial name="_Summernote" model="model2" />
 
 
 @section Scripts {

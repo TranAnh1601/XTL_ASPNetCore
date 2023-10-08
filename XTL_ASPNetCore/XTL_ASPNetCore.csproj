@@ -52,6 +52,7 @@
 		<Folder Include="Areas\Files\Data\" />
 		<Folder Include="Areas\Files\Models\" />
 		<Folder Include="Areas\Identity\Data\" />
+		<Folder Include="Areas\Product\Data\" />
 		<Folder Include="Uploads\" />
 		<Folder Include="wwwroot\files\" />
 	</ItemGroup>

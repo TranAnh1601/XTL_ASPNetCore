@@ -7,17 +7,18 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using XTL_ASPNetCore.Areas.Blog.Models;
 using XTL_ASPNetCore.Areas.Identity.Models.UserViewModels;
+using XTL_ASPNetCore.Areas.Product.Models;
 using XTL_ASPNetCore.Data;
 using XTL_ASPNetCore.Models;
 using XTL_ASPNetCore.Models.Blog;
+using XTL_ASPNetCore.Models.Product;
 using XTL_ASPNetCore.Utilities;
 
-namespace XTL_ASPNetCore.Areas.Blog.Controllers
+namespace XTL_ASPNetCore.Areas.Product.Controllers
 {
-    [Area("Blog")]
-    [Route("admin/blog/post/[action]/{id?}")]
+    [Area("Product")]
+    [Route("admin/productmanager/[action]/{id?}")]
     [Authorize(Roles = RoleName.Editor +"," + RoleName.Administrator)]
     public class ManageProductController : Controller
     {
@@ -35,7 +36,7 @@ namespace XTL_ASPNetCore.Areas.Blog.Controllers
         public string StatusMessage { get; set; }
         public async Task<IActionResult> Index([FromQuery(Name ="p")]int currentPage, int pagesize)
         {
-            var posts =  _context.Posts.Include(p => p.Author).OrderByDescending(p => p.DateCreated).AsQueryable();
+            var posts =  _context.Products.Include(p => p.Author).OrderByDescending(p => p.DateCreated).AsQueryable();
             //return View(posts);
             //-----***----phan trang
             var totalPosts = await posts.CountAsync(); // dem phan tu post
@@ -64,7 +65,7 @@ namespace XTL_ASPNetCore.Areas.Blog.Controllers
 
             var postInPage = await posts.Skip((currentPage - 1) * pagesize)
                         .Take(pagesize)
-                        .Include(p => p.PostCategories)
+                        .Include(p => p.ProductCategoryProducts)
                         .ThenInclude(pc => pc.Category).ToListAsync();
 
            
@@ -74,14 +75,14 @@ namespace XTL_ASPNetCore.Areas.Blog.Controllers
         // GET: Blog/Posts/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.Posts == null)
+            if (id == null || _context.Products == null)
             {
                 return NotFound();
             }
 
-            var post = await _context.Posts
+            var post = await _context.Products
                 .Include(p => p.Author)
-                .FirstOrDefaultAsync(m => m.PostId == id);
+                .FirstOrDefaultAsync(m => m.ProductID == id);
             if (post == null)
             {
                 return NotFound();
@@ -94,40 +95,41 @@ namespace XTL_ASPNetCore.Areas.Blog.Controllers
         public async Task<IActionResult> Create()
         {
             //ViewData["AuthorId"] = new SelectList(_context.Users,"Id","Id");
-            var categories = await _context.categories.ToListAsync();
+            var categories = await _context.CategoryProducts.ToListAsync();
             ViewData["categories"] = new MultiSelectList(categories, "Id", "Title"); // taọ multi (data, key, hiển thị)
             return View();
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Title,Description,Slug,Content,Published,CategoryIDs")] CreatepostModel post)
+        public async Task<IActionResult> Create([Bind("Title,Description,Slug,Content,Published,CategoryIDs,Price")] CreateProductModel product)
         {
-            var categories = await _context.categories.ToListAsync();
+            var categories = await _context.CategoryProducts.ToListAsync();
             ViewData["categories"] = new MultiSelectList(categories, "Id", "Title");
-            if (post.Slug == null)
+            if (product.Slug == null)
             {
-                post.Slug = AppUtilities.GenerateSlug(post.Title);
+                product.Slug = AppUtilities.GenerateSlug(product.Title);
             }
-            if (await _context.Posts.AnyAsync(p => p.Slug == post.Slug))
+            if (await _context.Products.AnyAsync(p => p.Slug == product.Slug))
             {
                 ModelState.AddModelError("Slug", "Nhập chuỗi Url khác");
-                return View(post);
+                return View(product);
             }
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 var user = await _userManager.GetUserAsync(this.User);
-                post.DateCreated = post.DateUpdated = DateTime.Now;
-                post.AuthorId = user.Id;
-                _context.Add(post);
+                product.DateCreated = product.DateUpdated = DateTime.Now;
+                product.AuthorId = user.Id;
+             
+                _context.Add(product);
 
-                if (post.CategoryIDs != null)
+                if (product.CategoryIDs != null)
                 {
-                    foreach (var CateId in post.CategoryIDs)
+                    foreach (var CateId in product.CategoryIDs)
                     {
-                        _context.Add(new PostCategory()
+                        _context.Add(new ProductCategoryProduct()
                         {
                             CategoryID = CateId,
-                            Post = post
+                            Product = product
                         });
                     }
                 }
@@ -139,7 +141,7 @@ namespace XTL_ASPNetCore.Areas.Blog.Controllers
             }
 
 
-            return View(post);
+            return View(product);
         }
         // GET: Blog/Posts/Edit/5
         public async Task<IActionResult> Edit(int? id)
@@ -150,24 +152,25 @@ namespace XTL_ASPNetCore.Areas.Blog.Controllers
             }
 
             // var post = await _context.Posts.FindAsync(id);
-            var post = await _context.Posts.Include(p => p.PostCategories).FirstOrDefaultAsync(p => p.PostId == id);
-            if (post == null)
+            var product = await _context.Products.Include(p => p.ProductCategoryProducts).FirstOrDefaultAsync(p => p.ProductID == id);
+            if (product == null)
             {
                 return NotFound();
             }
 
-            var postEdit = new CreatepostModel()
+            var postEdit = new CreateProductModel()
             {
-                PostId = post.PostId,
-                Title = post.Title,
-                Content = post.Content,
-                Description = post.Description,
-                Slug = post.Slug,
-                Published = post.Published,
-                CategoryIDs = post.PostCategories.Select(pc => pc.CategoryID).ToArray()
+                ProductID = product.ProductID,
+                Title = product.Title,
+                Content = product.Content,
+                Description = product.Description,
+                Slug = product.Slug,
+                Published = product.Published,
+                CategoryIDs = product.ProductCategoryProducts.Select(pc => pc.CategoryID).ToArray(),
+                Price = product.Price
             };
 
-            var categories = await _context.categories.ToListAsync();
+            var categories = await _context.CategoryProducts.ToListAsync();
             ViewData["categories"] = new MultiSelectList(categories, "Id", "Title");
 
             return View(postEdit);
@@ -179,25 +182,25 @@ namespace XTL_ASPNetCore.Areas.Blog.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("PostId,Title,Description,Slug,Content,Published,CategoryIDs")] CreatepostModel post)
+        public async Task<IActionResult> Edit(int id, [Bind("ProductID,Title,Description,Slug,Content,Published,CategoryIDs,Price")] CreateProductModel product)
         {
-            if (id != post.PostId)
+            if (id != product.ProductID)
             {
                 return NotFound();
             }
-            var categories = await _context.categories.ToListAsync();
+            var categories = await _context.CategoryProducts.ToListAsync();
             ViewData["categories"] = new MultiSelectList(categories, "Id", "Title");
 
 
-            if (post.Slug == null)
+            if (product.Slug == null)
             {
-                post.Slug = AppUtilities.GenerateSlug(post.Title);
+                product.Slug = AppUtilities.GenerateSlug(product.Title);
             }
 
-            if (await _context.Posts.AnyAsync(p => p.Slug == post.Slug && p.PostId != id))
+            if (await _context.Products.AnyAsync(p => p.Slug == product.Slug && p.ProductID != id))
             {
                 ModelState.AddModelError("Slug", "Nhập chuỗi Url khác");
-                return View(post);
+                return View(product);
             }
 
 
@@ -206,29 +209,30 @@ namespace XTL_ASPNetCore.Areas.Blog.Controllers
                 try
                 {
 
-                    var postUpdate = await _context.Posts.Include(p => p.PostCategories).FirstOrDefaultAsync(p => p.PostId == id);
-                    if (postUpdate == null)
+                    var productUpdate = await _context.Products.Include(p => p.ProductCategoryProducts).FirstOrDefaultAsync(p => p.ProductID == id);
+                    if (productUpdate == null)
                     {
                         return NotFound();
                     }
-
-                    postUpdate.Title = post.Title;
-                    postUpdate.Description = post.Description;
-                    postUpdate.Content = post.Content;
-                    postUpdate.Published = post.Published;
-                    postUpdate.Slug = post.Slug;
-                    postUpdate.DateUpdated = DateTime.Now;
+                    
+                    productUpdate.Title = product.Title;
+                    productUpdate.Description = product.Description;
+                    productUpdate.Content = product.Content;
+                    productUpdate.Published = product.Published;
+                    productUpdate.Slug = product.Slug;
+                    productUpdate.DateUpdated = DateTime.Now;
+                    productUpdate.Price = product.Price;
 
                     // Update PostCategory
-                    if (post.CategoryIDs == null) post.CategoryIDs = new int[] { };
+                    if (product.CategoryIDs == null) product.CategoryIDs = new int[] { };
 
-                    var oldCateIds = postUpdate.PostCategories.Select(c => c.CategoryID).ToArray();
-                    var newCateIds = post.CategoryIDs;
+                    var oldCateIds = productUpdate.ProductCategoryProducts.Select(c => c.CategoryID).ToArray();
+                    var newCateIds = product.CategoryIDs;
 
-                    var removeCatePosts = from postCate in postUpdate.PostCategories
-                                          where (!newCateIds.Contains(postCate.CategoryID))
-                                          select postCate;
-                    _context.PostCategories.RemoveRange(removeCatePosts);
+                    var removeCatePosts = from productCate in productUpdate.ProductCategoryProducts
+                                          where (!newCateIds.Contains(productCate.CategoryID))
+                                          select productCate;
+                    _context.ProductCategoryProducts.RemoveRange(removeCatePosts);
 
                     var addCateIds = from CateId in newCateIds
                                      where !oldCateIds.Contains(CateId)
@@ -236,20 +240,20 @@ namespace XTL_ASPNetCore.Areas.Blog.Controllers
 
                     foreach (var CateId in addCateIds)
                     {
-                        _context.PostCategories.Add(new PostCategory()
+                        _context.ProductCategoryProducts.Add(new ProductCategoryProduct()
                         {
-                            PostID = id,
+                            ProductID = id,
                             CategoryID = CateId
                         });
                     }
 
-                    _context.Update(postUpdate);
+                    _context.Update(productUpdate);
 
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!PostExists(post.PostId))
+                    if (!ProductExists(product.ProductID))
                     {
                         return NotFound();
                     }
@@ -258,30 +262,30 @@ namespace XTL_ASPNetCore.Areas.Blog.Controllers
                         throw;
                     }
                 }
-                StatusMessage = "Vừa cập nhật bài viết";
+                StatusMessage = "Vừa cập nhật sp";
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["AuthorId"] = new SelectList(_context.Users, "Id", "Id", post.AuthorId);
-            return View(post);
+            ViewData["AuthorId"] = new SelectList(_context.Users, "Id", "Id", product.AuthorId);
+            return View(product);
         }
 
         // GET: Blog/Posts/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.Posts == null)
+            if (id == null || _context.Products == null)
             {
                 return NotFound();
             }
 
-            var post = await _context.Posts
+            var product = await _context.Products
                 .Include(p => p.Author)
-                .FirstOrDefaultAsync(m => m.PostId == id);
-            if (post == null)
+                .FirstOrDefaultAsync(m => m.ProductID == id);
+            if (product == null)
             {
                 return NotFound();
             }
 
-            return View(post);
+            return View(product);
         }
 
         // POST: Blog/Posts/Delete/5
@@ -289,23 +293,23 @@ namespace XTL_ASPNetCore.Areas.Blog.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.Posts == null)
+            if (_context.Products == null)
             {
-                return Problem("Entity set 'AppDbContext.Posts'  is null.");
+                return Problem("Entity set 'AppDbContext.Products'  is null.");
             }
-            var post = await _context.Posts.FindAsync(id);
-            if (post != null)
+            var product = await _context.Products.FindAsync(id);
+            if (product != null)
             {
-                _context.Posts.Remove(post);
+                _context.Products.Remove(product);
             }
             
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool PostExists(int id)
+        private bool ProductExists(int id)
         {
-          return (_context.Posts?.Any(e => e.PostId == id)).GetValueOrDefault();
+          return (_context.Products?.Any(e => e.ProductID== id)).GetValueOrDefault();
         }
     }
 }

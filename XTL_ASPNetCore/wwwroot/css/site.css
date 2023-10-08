@@ -19,3 +19,22 @@ body {
 .navbar-brand {
     color: #8A2BE2 !important;
 }
+
+.categorysidebar ul,li { 
+      list-style: none;
+      padding-left: 10px; 
+}
+.categorysidebar a {
+    text-decoration: none;
+}
+.categorysidebar :hover {
+    color: #a04747;
+}
+
+.categorysidebar .active {
+    color: red;
+}
+
+.categorysidebar > ul > li > a {
+    font-weight: bold
+}
