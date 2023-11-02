@@ -23,6 +23,14 @@
                 <input asp-for="Title" class="form-control" />
                 <span asp-validation-for="Title" class="text-danger"></span>
             </div>
+            <input class="collapse"
+                   type="file"
+                   id="selectfileupload"
+                   onchange="AutoUploadPhoto()" />
+
+            <span class="btn btn-primary" onclick="ClickButtoUpload()">Uploads</span>
+            <div id="box-photo-upload" class="d-flex flex-wrap photo-upload" data-id="@Model.ProductID">
+            </div>
             <div class="form-group">
                 <label asp-for="Price" class="control-label"></label>
                 <input asp-for="Price" class="form-control" />
@@ -75,4 +83,102 @@
     </script>
 
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        function AutoUploadPhoto() {
+
+            var formData = new FormData();
+            var id = $("#box-photo-upload").data("id"); // id product
+            formData.append("id", id);// gan vao form data
+            //kt du lieu trong input
+            var sofile = document.getElementById("selectfileupload").files.length; // doc soluong file trong input
+            if (sofile == 0) return;
+
+            var fileData = document.getElementById("selectfileupload").files[0];
+            formData.append("FileUpload", fileData) // dinh kem vao file
+            var urlUpload = "@Url.Action("UploadPhotoApi")";
+
+            $.ajax({
+                data: formData,
+                cache: false,
+                url: urlUpload,
+                type: "POST",
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    // ... xu ly du lieu lay duoc
+                    LoadPhotos();
+                }
+            });
+
+        }
+        function ClickButtoUpload() {
+            $("#selectfileupload").click();
+        }
+        function setClickDeletePhoto() {
+            // lay cac the span, gan su kien click
+            $("#box-photo-upload .photodetail span").click(function () {
+
+                if (confirm("Có chắc chắn xóa ảnh?") != true) return;
+                var spanButton = $(this); //pt nut bam
+                var id = spanButton.data("id");
+                var formData = new FormData();
+                formData.append("id", id);
+                var urlDeletePhoto = "@Url.Action("DeletePhoto")";
+
+                $.ajax({
+                    data: formData,
+                    cache: false,
+                    url: urlDeletePhoto,
+                    type: "POST",
+                    contentType: false,
+                    processData: false,
+                    success: function (data) {
+                        LoadPhotos();
+
+                    }
+                });
+            });
+        }
+
+        function LoadPhotos() {
+            debugger;
+            var box = $("#box-photo-upload"); //lay ra box co id la ...
+            var ProductID = box.data("id"); //data-id chi can lay ten id
+            box.empty(); // xoa tat ca pt trong box neu co
+            var formData = new FormData();
+            formData.append("id", ProductID); // truyen du lieu id san pham
+            var urlListPhoto = "@Url.Action("ListPhotos")";
+            //console.log(ProductID);
+
+            $.ajax({
+                data: formData,
+                cache: false,
+                url: urlListPhoto,
+                type: "POST",
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    //console.log(data)
+                    // ... xu ly du lieu lay duoc
+
+                    data.photos.forEach(function (item) {
+                        // console.log(item.id);
+                        // console.log(item.path);
+                        var e = $(
+                            '<div class="photodetail w-25 p-1">'
+                            + '<img class="w-100" src="' + item.path + '" />'
+                            + '<span class="btn btn-danger" data-id="' + item.id + '">Delete</span></div>');
+                        box.append(e);
+                    });
+                    setClickDeletePhoto();
+                }
+            });
+
+        }
+        //khi toan bo doccument dc load thif func load  photo dc thuc thi
+        $(document).ready(function () {
+            LoadPhotos();
+        });
+
+    </script>
 }

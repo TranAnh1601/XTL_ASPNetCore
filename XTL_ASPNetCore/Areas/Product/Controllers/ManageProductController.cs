@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using Bogus.DataSets;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -18,7 +20,7 @@ using XTL_ASPNetCore.Utilities;
 namespace XTL_ASPNetCore.Areas.Product.Controllers
 {
     [Area("Product")]
-    [Route("admin/productmanager/[action]/{id?}")]
+    [Route("admin/managerproduct/[action]/{id?}")]
     [Authorize(Roles = RoleName.Editor +"," + RoleName.Administrator)]
     public class ManageProductController : Controller
     {
@@ -92,7 +94,7 @@ namespace XTL_ASPNetCore.Areas.Product.Controllers
         }
 
         // GET: Blog/Posts/Create
-        public async Task<IActionResult> Create()
+        public async Task<IActionResult> CreateAsync()
         {
             //ViewData["AuthorId"] = new SelectList(_context.Users,"Id","Id");
             var categories = await _context.CategoryProducts.ToListAsync();
@@ -175,11 +177,7 @@ namespace XTL_ASPNetCore.Areas.Product.Controllers
 
             return View(postEdit);
         }
-
-
-        // POST: Blog/Posts/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+    
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("ProductID,Title,Description,Slug,Content,Published,CategoryIDs,Price")] CreateProductModel product)
@@ -311,5 +309,150 @@ namespace XTL_ASPNetCore.Areas.Product.Controllers
         {
           return (_context.Products?.Any(e => e.ProductID== id)).GetValueOrDefault();
         }
+
+        public class UploadOneFile
+        {
+            [Required(ErrorMessage = "Phải chọn file upload")]
+            [DataType(DataType.Upload)]
+            [FileExtensions(Extensions = "png,jpg,jpeg,gif")]
+            [Display(Name = "Chọn file upload")]
+            public IFormFile FileUpload { get; set; }
+        }
+        [HttpGet]
+        public IActionResult UploadPhoto(int id)
+        {
+            var product = _context.Products.Where(e => e.ProductID == id)
+                            .Include(p => p.Photos)
+                            .FirstOrDefault();
+            if (product == null)
+            {
+                return NotFound("Không có sản phẩm");
+            }
+            ViewData["product"] = product;
+            return View(new UploadOneFile());
+        }
+        [HttpPost, ActionName("UploadPhoto")]
+        public async Task<IActionResult> UploadPhotoAsync(int id, [Bind("FileUpload")] UploadOneFile f)
+        {
+            var product = _context.Products.Where(e => e.ProductID == id)
+                .Include(p => p.Photos)
+                .FirstOrDefault();
+
+            if (product == null)
+            {
+                return NotFound("Không có sản phẩm");
+            }
+            ViewData["product"] = product;
+
+            if (f != null)
+            {                   //bo phan mo rong                   //ten file ngau nhien
+                var file1 = Path.GetFileNameWithoutExtension(Path.GetRandomFileName())
+                            + Path.GetExtension(f.FileUpload.FileName); // + phan mo rong cua file upload
+
+                var file = Path.Combine("Uploads", "Products", file1); // luu tru trong upload, product
+
+                // de copy du lieu trong file upload tao ra file steam
+                //luu o duong dan file va tao ra file moi FileMode.Create)
+                using (var filestream = new FileStream(file, FileMode.Create))
+                {
+                    await f.FileUpload.CopyToAsync(filestream);
+                }
+
+                _context.Add(new ProductPhoto()
+                {
+                    ProductID = product.ProductID,
+                    FileName = file1
+                });
+
+                await _context.SaveChangesAsync();
+            }
+            return View(f);
+        }
+
+        [HttpPost]
+        public IActionResult ListPhotos(int id)
+        {
+            var product = _context.Products.Where(e => e.ProductID == id)
+                .Include(p => p.Photos)
+                .FirstOrDefault();
+
+            if (product == null)
+            {
+                return Json(
+                    new
+                    {
+                        success = 0,
+                        message = "Product not found",
+                    }
+                );
+            }
+
+            var listphotos = product.Photos.Select(photo => new {
+                id = photo.Id,
+                path = "/contents/Products/" + photo.FileName
+            });  
+
+            return Json(
+                new
+                {
+                    success = 1,
+                    photos = listphotos
+                }
+            );
+
+
+        }
+        [HttpPost]
+        public IActionResult DeletePhoto(int id)
+        {
+            var photo = _context.ProductPhotos.Where(p => p.Id == id).FirstOrDefault();
+            if (photo != null)
+            {
+                _context.Remove(photo);
+                _context.SaveChanges();
+
+                var filename = "Uploads/Products/" + photo.FileName; // duong dan vat ly la upload k phai contents
+                System.IO.File.Delete(filename);//xoa file trong thu muc chua
+            }
+            return Ok();
+        }
+        [HttpPost]
+        public async Task<IActionResult> UploadPhotoApi(int id, [Bind("FileUpload")] UploadOneFile f)
+        {
+            var product = _context.Products.Where(e => e.ProductID == id)
+                .Include(p => p.Photos)
+                .FirstOrDefault();
+
+            if (product == null)
+            {
+                return NotFound("Không có sản phẩm");
+            }
+
+
+            if (f != null)
+            {
+                var file1 = Path.GetFileNameWithoutExtension(Path.GetRandomFileName())
+                            + Path.GetExtension(f.FileUpload.FileName);
+
+                var file = Path.Combine("Uploads", "Products", file1);
+
+                using (var filestream = new FileStream(file, FileMode.Create))
+                {
+                    await f.FileUpload.CopyToAsync(filestream);
+                }
+
+                _context.Add(new ProductPhoto()
+                {
+                    ProductID = product.ProductID,
+                    FileName = file1
+                });
+
+                await _context.SaveChangesAsync();
+            }
+
+
+            return Ok();
+        }
+
     }
 }
