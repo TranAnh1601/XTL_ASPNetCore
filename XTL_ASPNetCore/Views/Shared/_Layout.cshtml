@@ -33,8 +33,12 @@
                             <a class="nav-link text-dark" asp-area="Database" asp-controller="DbManage" asp-action="Index">Database</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="contact" asp-controller="Contacts" asp-action="SendContact">Contact</a>
+                            <a class="nav-link text-dark" asp-area="Contact" asp-controller="Contacts" asp-action="SendContact">Contact</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="Product" asp-controller="ViewProduct" asp-action="Index">Product</a>
+                        </li>
+                        @await Html.PartialAsync("_CartPartial")
                     </ul>
 
                     <partial name="_MenuManagePartial" />

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using System.Configuration;
 using System.Net.NetworkInformation;
+using XTL_ASPNetCore.Areas.Product.Service;
 using XTL_ASPNetCore.Data;
 using XTL_ASPNetCore.Models;
 
@@ -62,6 +63,14 @@ builder.Services.AddAuthentication()
 builder.Services.AddSingleton<IdentityErrorDescriber, IdentityErrorDescriber>();
 
 builder.Services.AddOptions();
+
+
+builder.Services.AddDistributedMemoryCache();           // Đăng ký dịch vụ lưu cache trong bộ nhớ (Session sẽ sử dụng nó)
+builder.Services.AddSession(cfg => {                    // Đăng ký dịch vụ Session
+    cfg.Cookie.Name = "appmvc";                 // Đặt tên Session - tên này sử dụng ở Browser (Cookie)
+    cfg.IdleTimeout = new TimeSpan(0, 30, 0);    // Thời gian tồn tại của Session 30p
+});
+
 var mailsetting = builder.Configuration.GetSection("MailSettings");
 builder.Services.Configure<MailSettings>(mailsetting);
 builder.Services.AddSingleton<IEmailSender, SendMailService>();
@@ -74,6 +83,8 @@ builder.Services.AddAuthorization(option =>
         builder.RequireRole(RoleName.Administrator); // quyen admin
     });
 });
+builder.Services.AddTransient<CartService>();
+
 
 
 
@@ -99,9 +110,9 @@ app.UseStaticFiles(new StaticFileOptions()
     FileProvider = new PhysicalFileProvider(
         Path.Combine(Directory.GetCurrentDirectory(), "Uploads")),
     RequestPath = "/contents" // duong dan url
-}); 
+});
 
-
+app.UseSession();
 app.UseRouting();
 
 app.UseAuthentication();

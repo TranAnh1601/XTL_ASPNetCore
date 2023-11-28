@@ -33,15 +33,18 @@ else
 <hr>
 @foreach (var post in Model)
 {
-    <div class="media border-bottom mb-3 pb-3">
-        <img src="/contents/new 1/im1.png" class="mr-3 w-25">
-        <div class="media-body">
+    <div class="row media border-bottom mb-3 pb-3">
+        <div class="col-md-3">
+            <img src="/contents/new 1/im1.png" class="mr-3 w-100">
+        </div>
+       
+        <div class="media-body col-md-9">
             <h5 class="mt-0">
                 <a asp-controller="ViewPost" asp-action="Detail" asp-route-postslug="@post.Slug">
                     @post.Title
                 </a>
             </h5>
-            @post.Description
+            @Html.Raw(@post.Description)
             <div>
                 Chủ đề:
                 <strong class="text-danger">

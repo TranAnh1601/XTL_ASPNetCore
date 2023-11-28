@@ -1,0 +1,19 @@
+﻿@using Microsoft.AspNetCore.Http
+@using Newtonsoft.Json
+@using XTL_ASPNetCore.Areas.Product.Service
+
+@inject CartService _cartService;
+
+
+@{
+    var cart = _cartService.GetCartItems();
+    if (cart.Count > 0)
+    {
+        <div 
+        class="nav-item">
+            <a class="text-warning" asp-route="cart">
+                Cart <i class="fas fa-shopping-cart"></i>(@cart.Count)
+        </a>
+        </div>
+    }
+}
